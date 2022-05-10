@@ -39,10 +39,40 @@
                 <h3 class="card-title">Products Listings</h3>
               </div>
 
+              <?php 
+                  if(!empty($_GET['pageno'])){
+                    $pageno = $_GET['pageno'];
+                  }else{
+                    $pageno = 1;
+                  }
+                  $numOfRecords = 3;
+                  $offset = ($pageno-1)*$numOfRecords;
+
+                  if(empty($_POST['search']) && empty($_COOKIE['search'])){
+                    $stmt = $pdo->prepare("SELECT * FROM products ORDER BY id DESC");
+                    $stmt->execute();
+                    $rawResult = $stmt->fetchAll();
+                    $total_pages = ceil(count($rawResult)/$numOfRecords);
+
+                    $stmt = $pdo->prepare("SELECT * FROM products ORDER BY id DESC LIMIT $offset,$numOfRecords");
+                    $stmt->execute();
+                    $result = $stmt->fetchAll();
+                  }else{
+                    $search = (!empty($_POST['search'])) ? $_POST['search'] : $_COOKIE['search'];
+                    $stmt = $pdo->prepare("SELECT * FROM products WHERE name LIKE '%$search%' ORDER BY id DESC");
+                    $stmt->execute();
+                    $rawResult = $stmt->fetchAll();
+                    $total_pages = ceil(count($rawResult)/$numOfRecords);
+
+                    $stmt = $pdo->prepare("SELECT * FROM products WHERE name LIKE '%$search%' ORDER BY id DESC LIMIT $offset,$numOfRecords");
+                    $stmt->execute();
+                    $result = $stmt->fetchAll();
+                  }
+              ?>
               <!-- /.card-header -->
               <div class="card-body">
                 <div>
-                  <a href="add.php" type="button" class="btn btn-success">Create Blog Post</a>
+                  <a href="product_add.php" type="button" class="btn btn-success">Create Product</a>
                 </div>
                 <br>
                 <table class="table table-bordered">
@@ -51,13 +81,57 @@
                       <th style="width: 10px">#</th>
                       <th>Title</th>
                       <th>Content</th>
+                      <th>Category</th>
+                      <th>In Stock</th>
+                      <th>Price</th>
                       <th style="width: 40px">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-        
-                  
-                
+                    <?php
+                      $i = 1;
+                      if($result){
+                        foreach ($result as $value){
+                          // display category name
+                          $catStmt = $pdo->prepare("SELECT * FROM categories WHERE id=".$value['category_id']);
+                          $catStmt->execute();
+                          $catResult = $catStmt->fetch(PDO::FETCH_ASSOC);
+          
+                    ?>
+                    <tr>
+                      <td><?php echo $i; ?></td>
+                      <td><?php echo escape($value['name']); ?></td>
+                      <td><?php echo escape(substr($value['description'],0,30)) ?></td>
+                      <td><?php echo escape($catResult['name']); ?></td>
+                      <td><?php echo escape($value['quantity']); ?></td>
+                      <td><?php echo escape($value['price']); ?></td>
+
+                      <td style="width:10%;">
+                        <!-- <div class="row">
+                          <a href="#" type="button" class="btn btn-warning"><i class="fas fa-edit"></i><a>&nbsp;&nbsp;
+                          <a href="#" type="button" class="btn btn-danger"><i class="fas fa-trash-alt"></i><a>
+                        </div> -->
+                        <div class="btn-group">
+                          <div class="container">
+                            <a href="product_edit.php?id=<?php echo $value['id'] ?>" type="button" class="btn btn-warning"><i class="fas fa-edit"></i><a>
+                          </div>
+                          <div class="container">
+                            <a href="product_delete.php?id=<?php echo $value['id'] ?>" onclick="return confirm('Are you sure you want to delete this item')" type="button" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <?php 
+                      $i++;
+                      }
+                    }else{
+                    ?>
+                        <tr>
+                          <td colspan="4" style="text-align:center;">No Data</td>
+                        </tr>
+                    <?php
+                    }
+                    ?>
                   </tbody>
                 </table>
               </div>
@@ -71,7 +145,19 @@
                   <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
                 </ul>
               </div> -->
-              
+              <div class="card-footer clearfix">
+                <ul class="pagination pagination-sm m-0 float-right">
+                  <li class="page-item"><a class="page-link" href="?pageno=1">First</a></li>
+                  <li class="page-item <?php if($pageno <= 1){ echo 'disabled';} ?>">
+                    <a class="page-link" href="<?php if($pageno <= 1){ echo '#';}else{ echo "?pageno=".($pageno-1); } ?>">Previous</a>
+                  </li>
+                  <li class="page-item"><a class="page-link" href="#"><?php echo $pageno; ?></a></li>
+                  <li class="page-item <?php if($pageno >= $total_pages){ echo 'disabled';} ?>">
+                    <a class="page-link" href="<?php if($pageno >= $total_pages){ echo '#';}else{ echo "?pageno=".($pageno+1); } ?>">Next</a>
+                  </li>
+                  <li class="page-item"><a class="page-link" href="<?php echo "?pageno=".$total_pages ?>">Last</a></li>
+                </ul>
+              </div>
             </div>
   
           </div>

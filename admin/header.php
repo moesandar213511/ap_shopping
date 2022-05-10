@@ -48,6 +48,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       // print($page);
     ?>
     <!-- Right navbar links -->
+    <?php if($page != 'order_list.php' && $page != 'order_detail.php'): ?>
     <ul class="navbar-nav ml-auto">
       <!-- Navbar Search -->
       <li class="nav-item">
@@ -82,8 +83,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
       </li>
 
       <!-- Messages Dropdown Menu -->
-     
     </ul>
+    <?php endif; ?>
   </nav>
   <!-- /.navbar -->
 
@@ -170,6 +171,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
               <i class="nav-icon fas fa-user"></i>
               <p>
                 User
+                <!-- <span class="right badge badge-danger">New</span> -->
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="order_list.php" class="nav-link">
+              <i class="nav-icon fas fa-table"></i>
+              <p>
+                Order
                 <!-- <span class="right badge badge-danger">New</span> -->
               </p>
             </a>

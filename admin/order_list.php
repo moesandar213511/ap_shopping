@@ -36,7 +36,7 @@
           <div class="col-md-12">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Products Listings</h3>
+                <h3 class="card-title">Order Listings</h3>
               </div>
 
               <?php 
@@ -48,39 +48,29 @@
                   $numOfRecords = 3;
                   $offset = ($pageno-1)*$numOfRecords;
 
-                  if(empty($_POST['search']) && empty($_COOKIE['search'])){
-                    $stmt = $pdo->prepare("SELECT * FROM posts ORDER BY id DESC");
-                    $stmt->execute();
-                    $rawResult = $stmt->fetchAll();
-                    $total_pages = ceil(count($rawResult)/$numOfRecords);
+                  $stmt = $pdo->prepare("SELECT * FROM sale_orders ORDER BY id DESC");
+                  $stmt->execute();
+                  $rawResult = $stmt->fetchAll();
+                  $total_pages = ceil(count($rawResult)/$numOfRecords);
 
-                    $stmt = $pdo->prepare("SELECT * FROM posts ORDER BY id DESC LIMIT $offset,$numOfRecords");
-                    $stmt->execute();
-                    $result = $stmt->fetchAll();
-                  }else{
-                    $search = (!empty($_POST['search'])) ? $_POST['search'] : $_COOKIE['search'];
-                    $stmt = $pdo->prepare("SELECT * FROM posts WHERE title LIKE '%$search%' ORDER BY id DESC");
-                    $stmt->execute();
-                    $rawResult = $stmt->fetchAll();
-                    $total_pages = ceil(count($rawResult)/$numOfRecords);
-
-                    $stmt = $pdo->prepare("SELECT * FROM posts WHERE title LIKE '%$search%' ORDER BY id DESC LIMIT $offset,$numOfRecords");
-                    $stmt->execute();
-                    $result = $stmt->fetchAll();
-                  }
+                  $stmt = $pdo->prepare("SELECT * FROM sale_orders ORDER BY id DESC LIMIT $offset,$numOfRecords");
+                  $stmt->execute();
+                  $result = $stmt->fetchAll();
               ?>
+
               <!-- /.card-header -->
               <div class="card-body">
                 <div>
-                  <a href="add.php" type="button" class="btn btn-success">Create Blog Post</a>
+                  <a href="category_add.php" type="button" class="btn btn-success">Create Category</a>
                 </div>
                 <br>
                 <table class="table table-bordered">
                   <thead>
                     <tr>
                       <th style="width: 10px">#</th>
-                      <th>Title</th>
-                      <th>Content</th>
+                      <th>Customer</th>
+                      <th>Total Price</th>
+                      <th>Order Date</th>
                       <th style="width: 40px">Actions</th>
                     </tr>
                   </thead>
@@ -89,12 +79,16 @@
                       $i = 1;
                       if($result){
                         foreach ($result as $value){
-                      
+                            // display category name
+                          $userStmt = $pdo->prepare("SELECT * FROM users WHERE id=".$value['user_id']);
+                          $userStmt->execute();
+                          $userResult = $userStmt->fetch(PDO::FETCH_ASSOC);
                     ?>
                     <tr>
                       <td><?php echo $i; ?></td>
-                      <td><?php echo escape($value['title']); ?></td>
-                      <td><?php echo escape(substr($value['content'],0,80)) ?></td>
+                      <td><?php echo escape($userResult['name']); ?></td>
+                      <td><?php echo escape($value['total_price']); ?></td>
+                      <td><?php echo escape(date('Y-m-d',strtotime($value['order_date']))); ?></td>
                       <td style="width:10%;">
                         <!-- <div class="row">
                           <a href="#" type="button" class="btn btn-warning"><i class="fas fa-edit"></i><a>&nbsp;&nbsp;
@@ -102,15 +96,13 @@
                         </div> -->
                         <div class="btn-group">
                           <div class="container">
-                            <a href="edit.php?id=<?php echo $value['id'] ?>" type="button" class="btn btn-warning"><i class="fas fa-edit"></i><a>
+                            <a href="order_detail.php?id=<?php echo $value['id'] ?>" type="button" class="btn btn-warning"><i class="fas fa-eye"></i><a>
                           </div>
-                          <div class="container">
-                            <a href="delete.php?id=<?php echo $value['id'] ?>" onclick="return confirm('Are you sure you want to delete this item')" type="button" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
-                          </div>
+                          
                         </div>
                       </td>
                     </tr>
-                    <!-- <?php 
+                    <?php 
                       $i++;
                       }
                     }else{
@@ -121,7 +113,8 @@
                     <?php
                     }
                     ?>
-                     -->
+                    
+                  
                   </tbody>
                 </table>
               </div>
@@ -182,53 +175,3 @@
   $offset = ($pageno-1)*$numOfRecords;
    
   -->
-
-
-  ===========================================================
-<!-- 
-
-  if(!empty($_POST)){
-    //  //csrf protection (look config/common.php)
-    // if (!hash_equals($_SESSION['_token'], $_POST['_token'])) die();
-
-    // backend validation than front validation is most secure.
-    if(empty($_POST['name']) || empty($_POST['description']) || empty($_POST['category']) 
-    || empty($_POST['quantity']) || empty($_POST['price']) || empty($_FILES['image'])){
-        echo "test";
-        if(empty($_POST['name'])){
-            $nameError = "Name is Empty";
-        }
-        if(empty($_POST['description'])){
-            $desError = "Description is Empty";
-        }
-        if(empty($_POST['category'])){
-            $catError = "Category is Empty";
-        }
-        if(empty($_POST['quantity'])){
-            $qtyError = "Quantity is Empty";
-        }elseif(is_int((int)$_POST['quantity']) != 1){ // check is int or not
-            $qtyError = "Quantity must be integer value.";
-        }
-
-        if(empty($_POST['price'])){
-            $priceError = "Price is Empty";
-        }elseif(is_int((int)$_POST['price']) != 1){ // check is int or not
-            $priceError = "Price must be integer value.";
-        }
-
-        if(empty($_FILES['image'])){
-            $imageError = "Image is Empty";
-        }
-    }else{ // validation success
-      echo "success";
-        // $name = $_POST['name'];
-        // $description = $_POST['description'];
-        // $stmt = $pdo->prepare("INSERT INTO categories(name,description) VALUES(:name,:description)"); // bind param
-        // $result = $stmt->execute(
-        //     array(':name'=>$name,':description'=>$description)
-        // );
-        // if($result){
-        //     echo "<script>alert('Category Added.');window.location.href='category.php';</script>";
-        // }
-    }
-  } -->
