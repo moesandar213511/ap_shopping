@@ -13,13 +13,19 @@
 
   if(!empty($_POST)){
     // backend validation
-    if(empty($_POST['name']) || empty($_POST['email']) || empty($_POST['password']) || strlen($_POST['password']) < 6){
+    if(empty($_POST['name']) || empty($_POST['email']) || empty($_POST['phone']) || empty($_POST['address']) || empty($_POST['password']) || strlen($_POST['password']) < 6){
       // || strlen($_POST['password']) < 6
       if(empty($_POST['name'])){
         $nameError = "Name can't be empty";
       }
       if(empty($_POST['email'])){
         $emailError = "Email can't be empty";
+      }
+      if(empty($_POST['phone'])){
+        $phoneError = "Phone No can't be empty";
+      }
+      if(empty($_POST['address'])){
+        $addressError = "Address can't be empty";
       }
       if(empty($_POST['password'])){
         $passwordError = "Password can't be empty";
@@ -30,6 +36,8 @@
     }else{
       $name = $_POST['name'];
       $email = $_POST['email'];
+      $phone = $_POST['phone'];
+      $address = $_POST['address'];
       $password = password_hash($_POST['password'],PASSWORD_DEFAULT);
 
       if(empty($_POST['role'])){ // if check is not on & is not admin,
@@ -46,9 +54,9 @@
       if($user){ 
         echo "<script>alert('Email duplicated.'); window.location.href = 'user_add.php'</script>";
       }else{
-        $stmt = $pdo->prepare("INSERT INTO users(name,email,password,role) VALUES(:name,:email,:password,:role)");
+        $stmt = $pdo->prepare("INSERT INTO users(name,email,password,phone,address,role) VALUES(:name,:email,:password,:phone,:address,:role)");
         $result = $stmt->execute(
-            array(':name' => $name,':email' => $email, ':password' => $password, ':role' => $role)
+            array(':name' => $name,':email' => $email, ':password' => $password, ':phone' => $phone, ':address' => $address, ':role' => $role)
         );
         if($result){
             echo "<script>alert('Successfully User Added.');window.location.href='user_list.php';</script>";
@@ -76,11 +84,26 @@
                           <p style="color: red;"><?php echo empty($nameError) ? '' : "*".$nameError; ?></p>
                           <input type="text"  class="form-control" name="name" value="">
                       </div>
+
                       <div class="form-group">
                           <label for="">Email</label><br>
                           <p style="color: red;"><?php echo empty($emailError) ? '' : "*".$emailError; ?></p>
                           <input type="email"  class="form-control" name="email" value="">
                       </div>
+
+                      <div class="form-group">
+                          <label for="">Phone No</label><br>
+                          <p style="color: red;"><?php echo empty($phoneError) ? '' : "*".$phoneError; ?></p>
+                          <input type="number"  class="form-control" name="phone" value="">
+                      </div>
+
+                      <div class="form-group">
+                          <label for="">Address</label><br>
+                          <p style="color: red;"><?php echo empty($addressError) ? '' : "*".$addressError; ?></p>
+                          <textarea name="address" class="form-control" rows="8" cols="80"></textarea>
+                          <!-- <input type="text"  class="form-control" name="address" value=""> -->
+                      </div>
+
                       <div class="form-group">
                           <label for="">Password</label><br>
                           <p style="color: red;"><?php echo empty($passwordError) ? '' : "*".$passwordError; ?></p>

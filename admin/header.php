@@ -49,6 +49,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     ?>
     <!-- Right navbar links -->
     <?php if($page != 'order_list.php' && $page != 'order_detail.php'): ?>
+      <?php if($page == 'index.php' || $page == 'category.php' || $page == 'user_list.php'): ?>
     <ul class="navbar-nav ml-auto">
       <!-- Navbar Search -->
       <li class="nav-item">
@@ -84,6 +85,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
       <!-- Messages Dropdown Menu -->
     </ul>
+    <?php endif; ?>
     <?php endif; ?>
   </nav>
   <!-- /.navbar -->

@@ -13,12 +13,18 @@
 
   if(!empty($_POST)){
     // backend validation
-    if(empty($_POST['name']) || empty($_POST['email'])){
+    if(empty($_POST['name']) || empty($_POST['email']) || empty($_POST['phone']) || empty($_POST['address'])){
       if(empty($_POST['name'])){
         $nameError = "Name can't be empty";
       }
       if(empty($_POST['email'])){
         $emailError = "Email can't be empty";
+      }
+      if(empty($_POST['phone'])){
+        $phoneError = "Phone No can't be empty";
+      }
+      if(empty($_POST['address'])){
+        $addressError = "Address can't be empty";
       }
     }elseif(!empty($_POST['password']) && strlen($_POST['password']) < 6){
         $passwordError = "Password must be 6 characters at least";
@@ -26,6 +32,8 @@
       $id = $_POST['id'];
       $name = $_POST['name'];
       $email = $_POST['email'];
+      $phone = $_POST['phone'];
+      $address = $_POST['address'];
       $password = password_hash($_POST['password'],PASSWORD_DEFAULT);
 
       // print'<pre>';
@@ -58,9 +66,9 @@
           echo "<script>alert('Email duplicated.');</script>";
       }else{ 
           if($password != null){
-            $stmt = $pdo->prepare("UPDATE users SET name='$name',email='$email',password='$password',role='$role' WHERE id='$id'");
+            $stmt = $pdo->prepare("UPDATE users SET name='$name',email='$email',phone='$phone',address='$address',password='$password',role='$role' WHERE id='$id'");
           }else{
-            $stmt = $pdo->prepare("UPDATE users SET name='$name',email='$email',role='$role' WHERE id='$id'");
+            $stmt = $pdo->prepare("UPDATE users SET name='$name',email='$email',phone='$phone',address='$address',role='$role' WHERE id='$id'");
           }
           $result = $stmt->execute();
           if($result){
@@ -97,6 +105,18 @@
                           <label for="">Email</label>
                           <p style="color: red;"><?php echo empty($emailError) ? '' : "*".$emailError; ?></p>
                           <input type="email"  class="form-control" name="email" value="<?php echo escape($result['email']) ?>">
+                      </div>
+                      <div class="form-group">
+                          <label for="">Phone No</label><br>
+                          <p style="color: red;"><?php echo empty($phoneError) ? '' : "*".$phoneError; ?></p>
+                          <input type="number"  class="form-control" name="phone" value="<?php echo escape($result['phone']) ?>">
+                      </div>
+
+                      <div class="form-group">
+                          <label for="">Address</label><br>
+                          <p style="color: red;"><?php echo empty($addressError) ? '' : "*".$addressError; ?></p>
+                          <textarea name="address" class="form-control" rows="8" cols="80"><?php echo escape($result['address']) ?></textarea>
+                          <!-- <input type="text"  class="form-control" name="address" value=""> -->
                       </div>
                       <div class="form-group">
                           <label for="">Password</label><br>

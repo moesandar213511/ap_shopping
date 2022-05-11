@@ -2,12 +2,23 @@
 		<?php 
 			require 'config/config.php';
 
+			// search box မှာ ရှာပြီးရင် pagination နှိပ်ရင် all data တွေပဲ ပြတဲ့ error ရှင်း။
+			if(!empty($_POST['search'])){
+				setcookie('search', $_POST['search'], time() + (86400 * 30), "/"); // 86400 = 1 day
+
+			}else{
+				if(empty($_GET['pageno'])){
+					unset($_COOKIE['search']);
+					setcookie('search', null, -1, '/');
+				}
+			}
+
 			if(!empty($_GET['pageno'])){
 				$pageno = $_GET['pageno'];
 			}else{
 				$pageno = 1;
 			}
-			$numOfRecords = 6;
+			$numOfRecords = 1;
 			$offset = ($pageno-1)*$numOfRecords;
 
 			// search ရှာတာမရှိရင် 
@@ -96,7 +107,7 @@
 											<span class="ti-bag"></span>
 											<p class="hover-text">add to bag</p>
 										</a>
-										<a href="" class="social-info">
+										<a href="product_detail.php?id=<?php echo $value['id']; ?>" class="social-info">
 											<span class="lnr lnr-move"></span>
 											<p class="hover-text">view more</p>
 										</a>

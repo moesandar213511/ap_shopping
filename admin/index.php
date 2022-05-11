@@ -58,6 +58,7 @@
                     $stmt->execute();
                     $result = $stmt->fetchAll();
                   }else{
+                    // search box မှာ ရှာပြီးရင် pagination နှိပ်ရင် all data တွေပဲ ပြတဲ့ error ရှင်း။
                     $search = (!empty($_POST['search'])) ? $_POST['search'] : $_COOKIE['search'];
                     $stmt = $pdo->prepare("SELECT * FROM products WHERE name LIKE '%$search%' ORDER BY id DESC");
                     $stmt->execute();
