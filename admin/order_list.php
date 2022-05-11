@@ -60,9 +60,9 @@
 
               <!-- /.card-header -->
               <div class="card-body">
-                <div>
+                <!-- <div>
                   <a href="category_add.php" type="button" class="btn btn-success">Create Category</a>
-                </div>
+                </div> -->
                 <br>
                 <table class="table table-bordered">
                   <thead>
