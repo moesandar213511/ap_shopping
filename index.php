@@ -18,27 +18,42 @@
 			}else{
 				$pageno = 1;
 			}
-			$numOfRecords = 1;
+			$numOfRecords = 3;
 			$offset = ($pageno-1)*$numOfRecords;
 
 			// search ရှာတာမရှိရင် 
 			if(empty($_POST['search']) && empty($_COOKIE['search'])){
-				$stmt = $pdo->prepare("SELECT * FROM products ORDER BY id DESC");
-				$stmt->execute();
-				$rawResult = $stmt->fetchAll();
-				$total_pages = ceil(count($rawResult)/$numOfRecords);
+				if(!empty($_GET['category_id'])){
+					$category_id = $_GET['category_id'];
 
-				$stmt = $pdo->prepare("SELECT * FROM products ORDER BY id DESC LIMIT $offset,$numOfRecords");
-				$stmt->execute();
-				$result = $stmt->fetchAll();
+					$stmt = $pdo->prepare("SELECT * FROM products WHERE category_id=$category_id AND quantity > 0 ORDER BY id DESC");
+					$stmt->execute();
+					$rawResult = $stmt->fetchAll();
+					// echo count($rawResult);
+					$total_pages = ceil(count($rawResult)/$numOfRecords);
+
+					$stmt = $pdo->prepare("SELECT * FROM products WHERE category_id=$category_id AND quantity > 0 ORDER BY id DESC LIMIT $offset,$numOfRecords");
+					$stmt->execute();
+					$result = $stmt->fetchAll();
+				}else{
+					$stmt = $pdo->prepare("SELECT * FROM products WHERE quantity > 0 ORDER BY id DESC");
+					$stmt->execute();
+					$rawResult = $stmt->fetchAll();
+					$total_pages = ceil(count($rawResult)/$numOfRecords);
+
+					$stmt = $pdo->prepare("SELECT * FROM products WHERE quantity > 0 ORDER BY id DESC LIMIT $offset,$numOfRecords");
+					$stmt->execute();
+					$result = $stmt->fetchAll();
+				}
+				
 			}else{
 				$search = (!empty($_POST['search'])) ? $_POST['search'] : $_COOKIE['search'];
-				$stmt = $pdo->prepare("SELECT * FROM products WHERE name LIKE '%$search%' ORDER BY id DESC");
+				$stmt = $pdo->prepare("SELECT * FROM products WHERE name LIKE '%$search%' AND quantity > 0 ORDER BY id DESC");
 				$stmt->execute();
 				$rawResult = $stmt->fetchAll();
 				$total_pages = ceil(count($rawResult)/$numOfRecords);
 
-				$stmt = $pdo->prepare("SELECT * FROM products WHERE name LIKE '%$search%' ORDER BY id DESC LIMIT $offset,$numOfRecords");
+				$stmt = $pdo->prepare("SELECT * FROM products WHERE name LIKE '%$search%' AND quantity > 0 ORDER BY id DESC LIMIT $offset,$numOfRecords");
 				$stmt->execute();
 				$result = $stmt->fetchAll();
 			}
@@ -51,12 +66,12 @@
 				<ul class="main-categories">
 					<li class="main-nav-list">
 					<?php 
-						$catStmt = $pdo->prepare("SELECT * FROM products ORDER BY id DESC");
+						$catStmt = $pdo->prepare("SELECT * FROM categories");
 						$catStmt->execute();
 						$catResult = $catStmt->fetchAll();
 					?>
 					<?php foreach ($catResult as $value) { ?>
-						<a href="#" data-toggle="collapse">
+						<a href="index.php?category_id=<?php echo $value['id'] ?>">
 							<span class="lnr lnr-arrow-right"></span><?php echo escape($value['name']) ?><span class="number">(53)</span>
 						</a>
 					<?php } ?>
@@ -94,23 +109,37 @@
 							<!-- single product -->
 						<div class="col-lg-4 col-md-6">
 							<div class="single-product">
-								<img class="img-fluid" src="admin/images/<?php echo $value['image'] ?>" style="height:200px;" alt="">
+								<a href="product_detail.php?id=<?php echo $value['id']; ?>">
+									<img class="img-fluid" src="admin/images/<?php echo $value['image'] ?>" style="height:200px;" alt="">
+								</a>
+								
 								<div class="product-details">
 									<h6><?php echo $value['name'] ?></h6>
 									<div class="price">
-										<h6>$<?php echo $value['price'] ?></h6>
+										<h6>$<?php echo escape($value['price']) ?></h6>
 										<!-- <h6 class="l-through">$210.00</h6> -->
 									</div>
 									<div class="prd-bottom">
+										<form action="addtocart.php" method="post">
+											<input name="_token" type="hidden" value="<?php echo $_SESSION['_token']; ?>">
 
-										<a href="" class="social-info">
-											<span class="ti-bag"></span>
-											<p class="hover-text">add to bag</p>
-										</a>
-										<a href="product_detail.php?id=<?php echo $value['id']; ?>" class="social-info">
+                      						<input type="hidden" name="id" value="<?php echo escape($value['id']) ?>">
+
+                      						<input type="hidden" name="qty" value="1">
+
+											<div class="social-info">
+												<button style="display:contents" class="social-info" type="submit">
+													<span class="ti-bag"></span>
+													<p style="left:23px" class="hover-text">add to bag</p>
+												</button>
+											</div>
+
+											<a href="product_detail.php?id=<?php echo $value['id']; ?>" class="social-info">
 											<span class="lnr lnr-move"></span>
 											<p class="hover-text">view more</p>
-										</a>
+											</a>
+										</form>
+										
 									</div>
 								</div>
 							</div>

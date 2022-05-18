@@ -45,7 +45,7 @@
                   }else{
                     $pageno = 1;
                   }
-                  $numOfRecords = 3;
+                  $numOfRecords = 10;
                   $offset = ($pageno-1)*$numOfRecords;
 
                   $stmt = $pdo->prepare("SELECT * FROM sale_orders ORDER BY id DESC");

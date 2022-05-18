@@ -43,33 +43,39 @@
         if(empty($_FILES['image']['name'])){
             $imageError = "Image is Empty";
         }
-      }elseif(is_numeric($_POST['quantity']) != 1){ // check is int or not
-        $qtyError = "Quantity must be integer value.";
-      }elseif(is_numeric($_POST['price']) != 1){ // check is int or not
-        $priceError = "Price must be integer value.";
-      }else{ // validation success
-        $file = "images/".$_FILES['image']['name'];
-        $imageType = pathinfo($file,PATHINFO_EXTENSION);
+      
+      }else{ // validation success // all field are included.
+        if(is_numeric($_POST['quantity']) != 1){ // check is int or not
+          $qtyError = "Quantity must be integer value.";
+        }
+        if(is_numeric($_POST['price']) != 1){ // check is int or not
+          $priceError = "Price must be integer value.";
+        }
 
-        if($imageType != 'jpg' && $imageType != 'jpeg' && $imageType != 'png'){
-            echo "<script>alert('Image must be jpg,jpeg,png.');</script>";
-        }else{
-            $name = $_POST['name'];
-            $description = $_POST['description'];
-            $category = $_POST['category'];
-            $quantity = $_POST['quantity'];
-            $price = $_POST['price'];
-            $image = $_FILES['image']['name'];
+        if($qtyError == '' && $priceError == ''){
+          $file = "images/".$_FILES['image']['name'];
+          $imageType = pathinfo($file,PATHINFO_EXTENSION);
 
-            move_uploaded_file($_FILES['image']['tmp_name'],$file);
+          if($imageType != 'jpg' && $imageType != 'jpeg' && $imageType != 'png'){
+              echo "<script>alert('Image must be jpg,jpeg,png.');</script>";
+          }else{
+              $name = $_POST['name'];
+              $description = $_POST['description'];
+              $category = $_POST['category'];
+              $quantity = $_POST['quantity'];
+              $price = $_POST['price'];
+              $image = $_FILES['image']['name'];
 
-            $stmt = $pdo->prepare("INSERT INTO products(name,description,category_id,quantity,price,image) VALUES(:name,:description,:category_id,:quantity,:price,:image)");
-            $result = $stmt->execute(
-                array(':name' => $name,':description' => $description,':category_id' => $category,':quantity' => $quantity,':price' => $price,':image' => $image)
-            );
-            if($result){
-                echo "<script>alert('Product is Added.');window.location.href='index.php';</script>";
-            }
+              move_uploaded_file($_FILES['image']['tmp_name'],$file);
+
+              $stmt = $pdo->prepare("INSERT INTO products(name,description,category_id,quantity,price,image) VALUES(:name,:description,:category_id,:quantity,:price,:image)");
+              $result = $stmt->execute(
+                  array(':name' => $name,':description' => $description,':category_id' => $category,':quantity' => $quantity,':price' => $price,':image' => $image)
+              );
+              if($result){
+                  echo "<script>alert('Product is Added.');window.location.href='index.php';</script>";
+              }
+          }
         }
     }
   }
@@ -120,13 +126,13 @@
                       <div class="form-group">
                           <label for="">Quantity</label><br>
                           <p style="color: red;"><?php echo empty($qtyError) ? '' : "*".$qtyError; ?></p>
-                          <input type="number"  class="form-control" name="quantity" value="">
+                          <input type="text"  class="form-control" name="quantity" value="">
                       </div>
                       
                       <div class="form-group">
                           <label for="">Price</label><br>
                           <p style="color: red;"><?php echo empty($priceError) ? '' : "*".$priceError; ?></p>
-                          <input type="number"  class="form-control" name="price" value="">
+                          <input type="text"  class="form-control" name="price" value="">
                       </div>
                       
                       <div class="form-group">

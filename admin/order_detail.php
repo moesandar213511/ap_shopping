@@ -30,12 +30,22 @@
               </div>
 
               <?php 
+                  if(!empty($_GET['pageno'])){
+                    $pageno = $_GET['pageno'];
+                  }else{
+                    $pageno = 1;
+                  }
+                  $numOfRecords = 10;
+                  $offset = ($pageno-1)*$numOfRecords;
+
                   $stmt = $pdo->prepare("SELECT * FROM sale_order_detail WHERE sale_order_id=".$_GET['id']);
                   $stmt->execute();
+                  $rawResult = $stmt->fetchAll();
+                  $total_pages = ceil(count($rawResult)/$numOfRecords);
+
+                  $stmt = $pdo->prepare("SELECT * FROM sale_order_detail WHERE sale_order_id=".$_GET['id']. " LIMIT $offset,$numOfRecords");
+                  $stmt->execute();
                   $result = $stmt->fetchAll();
-                    // print'<pre>';
-                    // print_r($result);
-                    // exit();  
               ?>
 
               <!-- /.card-header -->
@@ -57,8 +67,9 @@
                     <?php
                       $i = 1;
                       if($result){
+                        foreach($result as $value){
                             // display category name
-                          $productStmt = $pdo->prepare("SELECT * FROM products WHERE id=".$result[0]['product_id']);
+                          $productStmt = $pdo->prepare("SELECT * FROM products WHERE id=".$value['product_id']);
                           $productStmt->execute();
                           $pResult = $productStmt->fetch(PDO::FETCH_ASSOC);
                         
@@ -66,11 +77,12 @@
                     <tr>
                       <td><?php echo $i; ?></td>
                       <td><?php echo escape($pResult['name']); ?></td>
-                      <td><?php echo escape($result[0]['quantity']); ?></td>
-                      <td><?php echo escape(date('Y-m-d',strtotime($result[0]['order_date']))); ?></td>
+                      <td><?php echo escape($value['quantity']); ?></td>
+                      <td><?php echo escape(date('Y-m-d',strtotime($value['order_date']))); ?></td>
                     </tr>
                     <?php 
                       $i++;
+                      }
                     }else{
                     ?>
                         <tr>
@@ -84,7 +96,21 @@
                   </tbody>
                 </table>
               </div>
-            
+              <div class="card-footer clearfix">
+                <ul class="pagination pagination-sm m-0 float-right">
+                  <li class="page-item">
+                    <a class="page-link" href="?id=<?php echo $_GET['id']; ?>&pageno=1">First</a>
+                  </li>
+                  <li class="page-item <?php if($pageno <= 1){ echo 'disabled';} ?>">
+                    <a class="page-link" href="<?php if($pageno <= 1){ echo '#';}else{ echo "?id=".$_GET['id']."&pageno=".($pageno-1); } ?>">Previous</a>
+                  </li>
+                  <li class="page-item"><a class="page-link" href="#"><?php echo $pageno; ?></a></li>
+                  <li class="page-item <?php if($pageno >= $total_pages){ echo 'disabled';} ?>">
+                    <a class="page-link" href="<?php if($pageno >= $total_pages){ echo '#';}else{ echo "?id=".$_GET['id']."&pageno=".($pageno+1); } ?>">Next</a>
+                  </li>
+                  <li class="page-item"><a class="page-link" href="<?php echo "?id=".$_GET['id']."&pageno=".$total_pages ?>">Last</a></li>
+                </ul>
+              </div>
             </div>
   
           </div>

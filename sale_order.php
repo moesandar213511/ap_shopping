@@ -1,3 +1,57 @@
+<?php 
+	session_start();
+
+	require 'config/config.php';
+	require 'config/common.php';
+
+	if(!empty($_SESSION['cart'])){
+		$userId = $_SESSION['user_id'];
+		$total = 0;
+		foreach ($_SESSION['cart'] as $key => $qty) { 
+			$id = str_replace('id','',$key);
+			$stmt = $pdo->prepare("SELECT * FROM products WHERE id=:id");
+			$stmt->execute(
+				array(':id' => $id)
+			);
+			$result = $stmt->fetch(PDO::FETCH_ASSOC);
+			$total += $result['price'] * $qty;
+		}	
+
+		// insert into sale_orders table
+		$stmt = $pdo->prepare("INSERT INTO sale_orders(user_id,total_price,order_date) VALUES(:user_id,:total_price,:order_date)");
+		$result = $stmt->execute(
+			array(':user_id'=>$userId,':total_price'=>$total,':order_date'=>date('Y-m-d H:i:s'))
+		);
+
+		if($result){
+			$saleOrderId = $pdo->lastInsertId();
+			//insert into sale_order_detail
+			foreach ($_SESSION['cart'] as $key => $qty) {
+				$id = str_replace('id','',$key);
+				$stmt = $pdo->prepare("INSERT INTO sale_order_detail(sale_order_id,product_id,quantity) VALUES(:sale_order_id,:product_id,:quantity)");
+				$result = $stmt->execute(
+					array(':sale_order_id'=>$saleOrderId,':product_id'=>$id,
+					':quantity' => $qty)
+				);
+				$qtyStmt = $pdo->prepare("SELECT quantity FROM products WHERE id=".$id);
+				$qtyStmt->execute();
+				$qResult = $qtyStmt->fetch(PDO::FETCH_ASSOC);		
+
+				$updateQty = $qResult['quantity'] - $qty;
+
+				// modify product quantity
+				$stmt = $pdo->prepare("UPDATE products SET quantity=:qty WHERE id=:pid");
+
+				$result = $stmt->execute(
+					array(':qty'=>$updateQty,':pid'=>$id)
+				);
+			}
+			unset($_SESSION['cart']);
+		}
+	}
+
+?>
+
 <!DOCTYPE html>
 <html lang="zxx" class="no-js">
 
@@ -15,7 +69,7 @@
 	<!-- meta character set -->
 	<meta charset="UTF-8">
 	<!-- Site Title -->
-	<title>Karma Shop</title>
+	<title>AP Shop</title>
 
 	<!--
 		CSS
@@ -38,7 +92,7 @@
 			<nav class="navbar navbar-expand-lg navbar-light main_box">
 				<div class="container">
 					<!-- Brand and toggle get grouped for better mobile display -->
-					<a class="navbar-brand logo_h" href="index.html"><h4>AP Shopping<h4></a>
+					<a class="navbar-brand logo_h" href="index.php"><h4>AP Shopping<h4></a>
 					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
 					 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 						<span class="icon-bar"></span>
@@ -88,7 +142,7 @@
 	<section class="order_details section_gap">
 		<div class="container">
 			<h3 class="title_confirmation">Thank you. Your order has been received.</h3>
-			<div class="row order_d_inner">
+			<!-- <div class="row order_d_inner">
 				<div class="col-lg-6">
 					<div class="details_item">
 						<h4>Order Info</h4>
@@ -111,7 +165,7 @@
 						</ul>
 					</div>
 				</div>
-			</div>
+			</div> -->
 		</div>
 	</section>
 	<!--================End Order Details Area =================-->

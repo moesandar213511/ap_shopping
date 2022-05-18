@@ -54,18 +54,36 @@
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
+					<?php 
+						$link = $_SERVER['PHP_SELF'];
+						$link_array = explode('/',$link);
+						$page = end($link_array);
+						// print($page);
+					?>
 					<!-- Collect the nav links, forms, and other content for toggling -->
+					<?php
+						$cart = 0;
+						if(isset($_SESSION['cart'])){
+							foreach($_SESSION['cart'] as $key => $qty){
+								$cart += $qty;
+							}
+						}
+					?>
 					<div class="collapse navbar-collapse offset" id="navbarSupportedContent">
 						<ul class="nav navbar-nav navbar-right">
-							<li class="nav-item"><a href="#" class="cart"><span class="ti-bag"></span></a></li>
+							<li class="nav-item"><a href="cart.php" class="cart"><span class="ti-bag"><?php echo $cart; ?></span></a></li>
+							<?php if($page != 'product_detail.php'): ?>
 							<li class="nav-item">
 								<button class="search"><span class="lnr lnr-magnifier" id="search"></span></button>
 							</li>
+							<?php endif; ?>
 						</ul>
 					</div>
 				</div>
 			</nav>
 		</div>
+
+		<?php if($page != 'product_detail.php'): ?>
 		<div class="search_input" id="search_input_box">
 			<div class="container">
 				<form class="d-flex justify-content-between" action="index.php" method="post">
@@ -76,16 +94,29 @@
 				</form>
 			</div>
 		</div>
+		<?php endif; ?>
 	</header>
 	<!-- End Header Area -->
 
 	<!-- Start Banner Area -->
-	<section class="banner-area organic-breadcrumb">
+	<section class="banner-area organic-breadcrumb" style="margin-bottom: 0 !important;">
 		<div class="container">
 			<div class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end">
 				<div class="col-first">
-					<h1>Welcome</h1>
-
+					<?php if(!empty($_SESSION['username'])){ ?>
+					<h1>Welcome <?php echo escape($_SESSION['username']); ?></h1>
+					<a href="logout.php" class="primary-btn" style="line-height:30px;color:black;background:white">Logout</a>
+					<?php }else{ ?>
+					<!-- <nav class="d-flex align-items-center">
+						<a href="index.html">Home<span class="lnr lnr-arrow-right"></span></a>
+						<a href="category.html">Login/Register</a>
+					</nav> -->
+					<h1>Welcome from AP Shopping</h1>
+					<h3>
+						<a href="login.php" style="color:white">Login/</a>
+						<a href="register.php" style="color:white">Register</a>
+					</h3>
+					<?php } ?>
 				</div>
 			</div>
 		</div>
